@@ -1,0 +1,10 @@
+# Python 暫存檔
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code 配置
+.vscode/
+
+# 數據分析產生的結果
+experiments/results/*.csv
