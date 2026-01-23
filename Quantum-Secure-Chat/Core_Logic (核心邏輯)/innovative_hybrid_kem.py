@@ -65,7 +65,7 @@ class InnovativeHybridKEM:
         
         # 計算握手包長度
         self.HANDSHAKE_PACKAGE_LENGTH = struct.calcsize(self.HANDSHAKE_FORMAT)
-        print(f"[DEBUG] 握手包計算長度: {self.HANDSHAKE_PACKAGE_LENGTH} bytes")
+
         
         # 驗證長度
         expected = (self.SALT_LENGTH + self.TIMESTAMP_LENGTH + self.PROOF_LENGTH + 
@@ -249,33 +249,16 @@ class InnovativeHybridKEM:
         except Exception as e:
             raise KeyGenerationError(f"金鑰驗證失敗: {e}")
 
-    def _layered_kdf(self, shared_secrets: List[bytes], context: bytes, rounds: int = 3) -> bytes:
+    def _layered_kdf(self, inputs: List[bytes], context: bytes, rounds: int = 2) -> bytes:
         """
         分層金鑰派生函數
         """
         # 合併所有共享秘密
-        combined = b"".join(shared_secrets)
-        
+        current_hash = b"".join(inputs)
         # 多層KDF
-        current = combined
         for i in range(rounds):
-            # 層1: SHA3-512
-            layer1 = hashlib.sha3_512(current + context + f"L{i+1}-1".encode()).digest()
-            
-            # 層2: HMAC-SHA3-256
-            layer2 = hmac.new(
-                layer1[:32], 
-                current + context + f"L{i+1}-2".encode(), 
-                hashlib.sha3_256
-            ).digest()
-            
-            # 更新當前值
-            current = layer1 + layer2
-        
-        # 最終哈希 - 使用二進制session_id
-        master_key = hashlib.sha3_256(current + self._session_id_bin).digest()
-        
-        return master_key
+            current_hash = hashlib.sha3_256(current_hash + context + i.to_bytes(4, 'big')).digest()
+        return current_hash
 
     def derive_final_key(self, peer_ecc_pub: bytes, pqc_shared: bytes, salt: bytes, timestamp: int) -> Dict[str, bytes]:
         """
@@ -288,11 +271,7 @@ class InnovativeHybridKEM:
         except Exception as e:
             raise KeyGenerationError(f"ECC金鑰交換失敗: {e}")
         
-        # DEBUG: Print KDF inputs
-        print(f"[DEBUG_KDF] Salt: {salt.hex()[:16]}...")
-        print(f"[DEBUG_KDF] Timestamp: {timestamp}")
-        print(f"[DEBUG_KDF] ECC Shared: {ecc_shared.hex()[:16]}...")
-        print(f"[DEBUG_KDF] PQC Shared: {pqc_shared.hex()[:16]}...")
+
         
         # 2. 混合KDF上下文
         context = b"HybridKEM-v2.2" + timestamp.to_bytes(8, 'big') + salt
@@ -307,7 +286,7 @@ class InnovativeHybridKEM:
             'session_key': hmac.new(master_key, b"SESSION-v2", hashlib.sha3_256).digest(),
             'authentication_key': hmac.new(master_key, b"AUTH-v2", hashlib.sha3_256).digest()[:16]
         }
-        print(f"[DEBUG] Key Derived: Session={keys['session_key'].hex()[:8]}..., Enc={keys['encryption_key'].hex()[:8]}...")
+
         return keys
 
     def get_security_metrics(self) -> Dict:

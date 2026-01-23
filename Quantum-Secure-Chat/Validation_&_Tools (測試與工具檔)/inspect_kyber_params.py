@@ -1,7 +1,6 @@
 
 # network/inspect_kyber_params.py
-import sys
-import os
+
 
 try:
     from kyber_py.kyber import Kyber768
