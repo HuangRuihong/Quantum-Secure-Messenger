@@ -3,9 +3,9 @@
 import sys
 import os
 
-# Add current directory to path so we can import modules
-sys.path.append(os.getcwd())
-sys.path.append(os.path.join(os.getcwd(), 'network'))
+# Add core directory to path so we can import modules
+core_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'core'))
+sys.path.append(core_path)
 
 from innovative_hybrid_kem import InnovativeHybridKEM
 

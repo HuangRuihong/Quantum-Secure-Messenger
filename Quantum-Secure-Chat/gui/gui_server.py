@@ -7,10 +7,10 @@ from tkinter import scrolledtext
 # 自動路徑引導
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
-core_logic_path = os.path.join(project_root, "Core_Logic (核心邏輯)")
+network_path = os.path.join(project_root, "network")
 
-if core_logic_path not in sys.path:
-    sys.path.append(core_logic_path)
+if network_path not in sys.path:
+    sys.path.append(network_path)
 
 from server import ServerBackend
 
@@ -31,7 +31,7 @@ class ServerGUI:
         self.root.configure(bg=COLOR_BG)
         
         self.backend = ServerBackend(log_callback=self.log)
-        self.backend.set_event_callback(self.on_client_event)
+        self.backend.client_event_callback = self.on_client_event
         self.clients_list = [] # List of client_ids
         
         self.setup_ui()
@@ -67,11 +67,7 @@ class ServerGUI:
         btn_bc = tk.Button(broadcast_frame, text="TRANSMIT", command=self.do_broadcast, bg="#004466", fg="#ffffff", font=("Consolas", 9, "bold"), relief=tk.FLAT)
         btn_bc.pack(side=tk.RIGHT, padx=10, pady=5)
 
-        # 4. 實時日誌監控
-        log_frame = tk.Frame(self.root, bg=COLOR_BG)
-        btn_bc.pack(side=tk.RIGHT, padx=10, pady=5)
-        
-        # 3. 主內容區: 左側日誌 + 右側客戶端列表
+        # 4. 主內容區: 左側日誌 + 右側客戶端列表
         content_frame = tk.Frame(self.root, bg=COLOR_BG)
         content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
@@ -123,9 +119,10 @@ class ServerGUI:
     def log(self, message):
         def _append():
             prefix = "[LOG]"
-            if "收到" in message: prefix = "[IN ]"
-            elif "發送" in message: prefix = "[OUT]"
-            elif "握手" in message: prefix = "[SEC]"
+            if "收到" in message or "IN" in message: prefix = "[IN ]"
+            elif "發送" in message or "OUT" in message: prefix = "[OUT]"
+            elif "握手" in message or "SEC" in message: prefix = "[SEC]"
+            elif "錯誤" in message or "失敗" in message: prefix = "[ERR]"
             
             self.log_area.insert(tk.END, f"{prefix} {message}\n")
             self.log_area.see(tk.END)

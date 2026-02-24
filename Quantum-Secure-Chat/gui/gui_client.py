@@ -8,10 +8,10 @@ from tkinter import scrolledtext
 # 自動路徑引導
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
-core_logic_path = os.path.join(project_root, "Core_Logic (核心邏輯)")
+network_path = os.path.join(project_root, "network")
 
-if core_logic_path not in sys.path:
-    sys.path.append(core_logic_path)
+if network_path not in sys.path:
+    sys.path.append(network_path)
 
 from client import ClientBackend
 

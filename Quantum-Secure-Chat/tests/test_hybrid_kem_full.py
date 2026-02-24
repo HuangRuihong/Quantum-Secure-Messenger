@@ -4,7 +4,7 @@ import os
 
 
 # 設定路徑以匯入核心模組
-core_logic_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Core_Logic (核心邏輯)'))
+core_logic_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'core'))
 sys.path.append(core_logic_path)
 
 from innovative_hybrid_kem import InnovativeHybridKEM
